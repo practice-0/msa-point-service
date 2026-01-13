@@ -1,7 +1,0 @@
-services:
-  user-services:
-    container_name: point-service
-    image: point-service
-    ports:
-    - 8082:8080
-    
