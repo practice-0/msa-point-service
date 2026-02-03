@@ -8,8 +8,3 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://${DB_HOST}:3306/point_db
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-
-networks:
-  default:
-    external: true
-    name: msa-net
