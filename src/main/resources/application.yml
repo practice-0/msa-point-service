@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
+    url: jdbc:mysql://${DB_HOST}:3306/${DB_NAME}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
