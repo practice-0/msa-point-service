@@ -39,8 +39,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         env:
           SERVER_PORT: 8080
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_NAME: point_db
+          SPRING_DATASOURCE_URL: jdbc:mysql://${{ secrets.DB_HOST }}:3306/point_db
           SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         with:
@@ -49,8 +48,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           envs: >
             SERVER_PORT,
-            DB_HOST,
-            DB_NAME,
+            SPRING_DATASOURCE_URL,
             SPRING_DATASOURCE_USERNAME,
             SPRING_DATASOURCE_PASSWORD
           script_stop: true
