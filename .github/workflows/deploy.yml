@@ -34,14 +34,30 @@ jobs:
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/board-system/point-service:${{ github.sha }}
             ${{ steps.login-ecr.outputs.registry }}/board-system/point-service:latest
-        
+      
+      - name: s3 upload
+        run: |
+          aws s3 cp deploy/ \
+          s3://bs-bucket-a/point-service/deploy/ \
+          --recursive
+
       - name: ssm command
+        env:
+          SERVICE_NAME: point-service
+          DEPLOY_DIR: /home/ubuntu/${{ env.SERVICE_NAME }}
         run: |
           aws ssm send-command \
             --region ap-northeast-2 \
             --targets "Key=tag:Service,Values=point-service" \
             --document-name "AWS-RunShellScript" \
-            --parameters 'commands=["bash /home/ubuntu/msa-point-service/deploy.sh"]'
+            --parameters 'commands=[
+            "mkdir -p ${DEPLOY_DIR}",
+            "export SERVICE_NAME=${SERVICE_NAME}",
+            "export IMAGE_TAG=${{ github.sha }}",
+            "aws s3 cp s3://bs-bucket-a/${SERVICE_NAME}/deploy/deploy.sh ${DEPLOY_DIR}/deploy.sh",
+            "chmod +x ${DEPLOY_DIR}/deploy.sh",
+            "bash ${DEPLOY_DIR}/deploy.sh"
+            ]'
 
       # - name: ec2 SSH
       #   uses: appleboy/ssh-action@v1.0.3

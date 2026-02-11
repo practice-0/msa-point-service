@@ -1,19 +1,20 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 echo "===== deploy start ====="
+echo "IMAGE_TAG=${IMAGE_TAG}"
 
 # 1. 서비스 디렉토리 이동
-cd /home/ubuntu/msa-point-service
+mkdir -p /home/ubuntu/${SERVICE_NAME}
+cd /home/ubuntu/${SERVICE_NAME}
 
-# 2. 최신 compose / deploy 스크립트 반영
-echo "Updating source..."
-sudo -iu ubuntu bash -c '
-cd /home/ubuntu/msa-point-service
-git fetch origin
-git reset --hard origin/master
-git clean -fd
-'
+# docker-compose.yml download
+echo "Download latest compose..."
+aws s3 cp \
+  s3://bs-bucket-a/${SERVICE_NAME}/deploy/docker-compose.yml \
+  docker-compose.yml
+
 # 3. SSM Parameter → .env 생성
 echo "Fetching SSM parameters..."
 
@@ -29,7 +30,7 @@ aws ssm get-parameters-by-path \
 # point-service 전용
 aws ssm get-parameters-by-path \
   --region ap-northeast-2 \
-  --path /prod/board-system/point-service \
+  --path /prod/board-system/${SERVICE_NAME} \
   --with-decryption \
   --query "Parameters[*].[Name,Value]" \
   --output text \
