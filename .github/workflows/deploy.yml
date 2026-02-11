@@ -44,20 +44,33 @@ jobs:
       - name: ssm command
         env:
           SERVICE_NAME: point-service
-          DEPLOY_DIR: /home/ubuntu/${{ env.SERVICE_NAME }}
+          DEPLOY_DIR: /home/ubuntu/point-service
         run: |
-          aws ssm send-command \
+          COMMAND_ID=$(aws ssm send-command \
+            --query "Command.CommandId" \
+            --output text \
             --region ap-northeast-2 \
             --targets "Key=tag:Service,Values=point-service" \
             --document-name "AWS-RunShellScript" \
-            --parameters 'commands=[
-            "mkdir -p ${DEPLOY_DIR}",
-            "export SERVICE_NAME=${SERVICE_NAME}",
-            "export IMAGE_TAG=${{ github.sha }}",
-            "aws s3 cp s3://bs-bucket-a/${SERVICE_NAME}/deploy/deploy.sh ${DEPLOY_DIR}/deploy.sh",
-            "chmod +x ${DEPLOY_DIR}/deploy.sh",
-            "bash ${DEPLOY_DIR}/deploy.sh"
-            ]'
+            --parameters "commands=[
+            \"mkdir -p ${DEPLOY_DIR}\",
+            \"export SERVICE_NAME=${SERVICE_NAME}\",
+            \"export IMAGE_TAG=${{ github.sha }}\",
+            \"aws s3 cp s3://bs-bucket-a/${SERVICE_NAME}/deploy/deploy.sh ${DEPLOY_DIR}/deploy.sh\",
+            \"chmod +x ${DEPLOY_DIR}/deploy.sh\",
+            \"bash ${DEPLOY_DIR}/deploy.sh\"
+            ]")
+
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --region ap-northeast-2 \
+            --filters "Name=tag:Service,Values=point-service" \
+                      "Name=instance-state-name,Values=running" \
+            --query "Reservations[0].Instances[0].InstanceId" \
+            --output text)
+
+          aws ssm wait command-executed \
+            --command-id ${COMMAND_ID} \
+            --instance-id ${INSTANCE_ID}
 
       # - name: ec2 SSH
       #   uses: appleboy/ssh-action@v1.0.3
