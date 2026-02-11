@@ -8,9 +8,9 @@ cd /home/ubuntu/msa-point-service
 
 # 2. 최신 compose / deploy 스크립트 반영
 echo "Updating source..."
-git fetch origin
-git reset --hard origin/master
-git clean -fd
+sudo -u ubuntu git fetch origin
+sudo -u ubuntu git reset --hard origin/master
+sudo -u ubuntu git clean -fd
 
 # 3. SSM Parameter → .env 생성
 echo "Fetching SSM parameters..."
