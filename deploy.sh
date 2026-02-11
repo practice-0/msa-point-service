@@ -8,10 +8,12 @@ cd /home/ubuntu/msa-point-service
 
 # 2. 최신 compose / deploy 스크립트 반영
 echo "Updating source..."
-sudo -u ubuntu git fetch origin
-sudo -u ubuntu git reset --hard origin/master
-sudo -u ubuntu git clean -fd
-
+sudo -iu ubuntu bash -c '
+cd /home/ubuntu/msa-point-service
+git fetch origin
+git reset --hard origin/master
+git clean -fd
+'
 # 3. SSM Parameter → .env 생성
 echo "Fetching SSM parameters..."
 
@@ -33,7 +35,10 @@ aws ssm get-parameters-by-path \
   --output text \
 | awk '{split($1,a,"/"); print a[length(a)]"="$2}' >> .env
 
-echo ".env generated"
+if [ ! -s .env ]; then
+  echo ".env generation failed"
+  exit 1
+fi
 
 # 4. ECR 로그인
 echo "Login to ECR..."
@@ -44,7 +49,8 @@ aws ecr get-login-password --region ap-northeast-2 \
 
 # 5. 최신 이미지 pull & 재시작
 echo "Docker compose deploy..."
-docker compose pull
+docker compose pull || exit 1
 docker compose up -d
+docker ps
 
 echo "===== deploy finished ====="
