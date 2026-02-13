@@ -9,7 +9,7 @@ echo "IMAGE_TAG=${IMAGE_TAG}"
 mkdir -p /home/ubuntu/${SERVICE_NAME}
 cd /home/ubuntu/${SERVICE_NAME}
 
-# docker-compose.yml download
+# 2. docker-compose.yml download
 echo "Download latest compose..."
 aws s3 cp \
   s3://bs-bucket-a/${SERVICE_NAME}/deploy/docker-compose.yml \
